@@ -1,3 +1,4 @@
+import { type SkuItem } from "@/apis/fetch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -8,25 +9,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Image from "next/image";
 
-type SkuItem = {
-  colorNo: string;
-  sizeText: string;
-  productId: string;
-  styleText: string;
-  stockNum?: number;
-  varyPrice: number;
+type Props = {
+  skuGroup: Record<string, SkuItem[]>;
+  colors: {
+    colorNo: string;
+    styleText: string;
+    chipPic: string;
+    colorPic: string;
+  }[];
+  nameCode: string;
 };
-function Component({
-  colorGroups,
-}: {
-  colorGroups: Record<string, SkuItem[]>;
-}) {
-  const colorNos = Object.keys(colorGroups);
+
+function Component({ skuGroup, colors, nameCode }: Props) {
   const sizes = Array.from(
     new Set(
-      Object.values(colorGroups).flatMap((items) =>
-        items.map((item) => item.sizeText)
+      Object.values(skuGroup).flatMap(
+        (items) => items && items.map((item) => item.sizeText)
       )
     )
   );
@@ -34,15 +34,31 @@ function Component({
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle></CardTitle>
+        <CardTitle>{nameCode}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-secondary">
             <TableRow>
-              <TableHead className="w-[100px]">Size</TableHead>
-              {colorNos.map((colorNo) => (
-                <TableHead key={colorNo}>{colorNo}</TableHead>
+              <TableHead className="w-[100px] text-secondary-foreground">
+                Size
+              </TableHead>
+              {colors.map(({ styleText, chipPic }) => (
+                <TableHead
+                  key={styleText}
+                  className="text-secondary-foreground"
+                >
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={"https://www.uniqlo.cn" + chipPic}
+                      alt={styleText}
+                      width={20}
+                      height={20}
+                      className="rounded-full"
+                    />
+                    {styleText}
+                  </div>
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -50,8 +66,8 @@ function Component({
             {sizes.map((sizeText) => (
               <TableRow key={sizeText}>
                 <TableCell className="font-medium">{sizeText}</TableCell>
-                {colorNos.map((colorNo) => {
-                  const skuItem = colorGroups[colorNo].find(
+                {colors.map(({ colorNo }) => {
+                  const skuItem = skuGroup[colorNo].find(
                     (item) => item.colorNo === colorNo
                   );
                   return (
