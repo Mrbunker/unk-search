@@ -2,10 +2,20 @@ import { stock, feed, spuDetail } from "./mock";
 
 const fetcher = async (url: string, options: any) => {
   const response = await fetch(url, options);
-  return response.json();
+  const result = await response.json();
+  console.log("|result", url, JSON.stringify(result));
+  return result;
 };
 
-const origin = "https://a.uniqlo.cn";
+type Resp<D> = Promise<{
+  msgCode: any;
+  msg: any;
+  resp: D;
+  success: boolean;
+  total: number;
+}>;
+
+const origin = process.env.ORIGIN;
 const post = (path: string, data?: Record<string, any>) => {
   const url = `${origin}${path}`;
   const options = {
@@ -31,7 +41,7 @@ export const searchDescription = async (params: {
   keyword: string;
   pageSize?: number;
   page?: number;
-}) => {
+}): Resp<any> => {
   const path = `/m/hmall-sc-service/search/searchWithDescriptionAndConditions`;
   const data = {
     identity: [],
@@ -52,28 +62,41 @@ export const searchDescription = async (params: {
     storeCode: [],
   };
 
-  // return post(path, data);
-  return feed;
+  return post(path, data);
+  // return feed;
 };
 
 export const queryStock = async (params: {
   productCode: string;
   distribution?: string;
   type?: string;
-}) => {
+}): Resp<any> => {
   const path = `/m/stock/stock/query`;
   const data = {
     productCode: params.productCode,
     distribution: params.distribution ?? "EXPRESS",
     type: params.type ?? "DETAIL",
   };
-  // return post(path, data);
-  return stock;
+  return post(path, data);
+  // return stock;
 };
 
-export const querySpuDetail = async (params: { productCode: string }) => {
-  const path = `/m/m/product/i/product/spu/h5/query/${params.productCode}`;
+export type SkuItem = {
+  colorNo: string;
+  sizeText: string;
+  productId: string;
+  styleText: string;
+  varyPrice: number;
+};
+type SkuItems = SkuItem[];
 
-  // return get(path);
-  return spuDetail;
+export const querySpuDetail = async (params: {
+  productCode: string;
+}): Resp<
+  { summary: any; sizeList: string[]; rows: SkuItems; stockLevel: any }[]
+> => {
+  const path = `/m/product/i/product/spu/h5/query/${params.productCode}`;
+
+  return get(path);
+  // return spuDetail;
 };

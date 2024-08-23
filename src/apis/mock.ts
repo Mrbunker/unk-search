@@ -1153,7 +1153,7 @@ export const spuDetail = {
   ],
   success: true,
   total: 1,
-} as const;
+};
 
 export const stock = {
   msgCode: "STOCK_SUCCESS",
