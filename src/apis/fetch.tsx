@@ -62,8 +62,8 @@ export const searchDescription = async (params: {
     storeCode: [],
   };
 
-  return post(path, data);
-  // return feed;
+  // return post(path, data);
+  return feed;
 };
 
 export const queryStock = async (params: {
@@ -77,8 +77,8 @@ export const queryStock = async (params: {
     distribution: params.distribution ?? "EXPRESS",
     type: params.type ?? "DETAIL",
   };
-  return post(path, data);
-  // return stock;
+  // return post(path, data);
+  return stock;
 };
 
 export type SkuItem = {
@@ -93,10 +93,18 @@ type SkuItems = SkuItem[];
 export const querySpuDetail = async (params: {
   productCode: string;
 }): Resp<
-  { summary: any; sizeList: string[]; rows: SkuItems; stockLevel: any }[]
+  {
+    summary: {
+      isExpress: "Y" | "N";
+      isPickup: "Y" | "N";
+    };
+    sizeList: string[];
+    rows: SkuItems;
+    stockLevel: any;
+  }[]
 > => {
   const path = `/m/product/i/product/spu/h5/query/${params.productCode}`;
 
-  return get(path);
-  // return spuDetail;
+  // return get(path);
+  return spuDetail;
 };

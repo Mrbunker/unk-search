@@ -12,7 +12,7 @@ import {
 import Image from "next/image";
 
 type Props = {
-  skuGroup: Record<string, SkuItem[]>;
+  skuGroup: Record<string, (SkuItem & { expressStock: number })[]>;
   colors: {
     colorNo: string;
     styleText: string;
@@ -20,9 +20,11 @@ type Props = {
     colorPic: string;
   }[];
   nameCode: string;
+  isExpress: boolean;
+  isPickup: boolean;
 };
 
-function Component({ skuGroup, colors, nameCode }: Props) {
+function Component({ skuGroup, colors, nameCode, isExpress, isPickup }: Props) {
   const sizes = Array.from(
     new Set(
       Object.values(skuGroup).flatMap(
@@ -35,6 +37,10 @@ function Component({ skuGroup, colors, nameCode }: Props) {
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>{nameCode}</CardTitle>
+        <div className="flex items-center gap-2 pt-2">
+          {isExpress && <Badge variant="secondary">express</Badge>}
+          {isPickup && <Badge variant="secondary">pickup</Badge>}
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -75,10 +81,10 @@ function Component({ skuGroup, colors, nameCode }: Props) {
                       {skuItem ? (
                         <Badge
                           variant={
-                            skuItem.varyPrice > 0 ? "default" : "secondary"
+                            skuItem.expressStock > 0 ? "default" : "secondary"
                           }
                         >
-                          {skuItem.varyPrice}
+                          {skuItem.expressStock}
                         </Badge>
                       ) : (
                         <Badge variant="outline">N/A</Badge>

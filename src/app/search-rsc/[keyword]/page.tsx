@@ -1,6 +1,8 @@
 import { querySpuDetail, queryStock, searchDescription } from "@/apis/fetch";
 import SearchInput from "@/components/SearchInput";
 import SkuStock from "@/components/SkuStock";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { groupBy } from "@/lib/utils";
 
 const SearchResult = async ({ params }: { params: { keyword: string } }) => {
@@ -15,17 +17,29 @@ const SearchResult = async ({ params }: { params: { keyword: string } }) => {
     return "无数据";
   }
 
-  const { productCode, colorPic, styleText, chipPic, name, code } =
-    feedRes.resp[1]?.[0];
-  const stockRes = await queryStock({ productCode });
-  const spuRes = await querySpuDetail({ productCode });
+  const { colorPic, styleText, chipPic } = feedRes.resp[1]?.[0];
+  const { productCode, name, code } = feedRes.resp[1]?.[0];
 
-  if (!stockRes.success || !spuRes.success) {
+  const stockRes = await queryStock({ productCode });
+  if (!stockRes.success) {
+    return <div>Error</div>;
+  }
+  const { expressSkuStocks } = stockRes.resp[0];
+  const spuRes = await querySpuDetail({ productCode });
+  if (!spuRes.success) {
     return <div>Error</div>;
   }
 
-  const { rows: skus } = spuRes.resp[0];
-  const skuGroup = groupBy(skus, "colorNo");
+  const { rows: skus, summary } = spuRes.resp[0];
+  const skuStocks = skus.map((skuItem) => {
+    const estock = expressSkuStocks[skuItem.productId] as number;
+    console.log("|estock", skuItem.productId, estock);
+    return {
+      ...skuItem,
+      expressStock: estock,
+    };
+  });
+  const skuGroup = groupBy(skuStocks, "colorNo");
   const colors = Object.keys(skuGroup).map((colorNo) => {
     const no = colorNo.slice(3);
     return {
@@ -38,11 +52,12 @@ const SearchResult = async ({ params }: { params: { keyword: string } }) => {
 
   return (
     <div className="m-4 p-4">
-      <SearchInput />
       <SkuStock
         skuGroup={skuGroup}
         colors={colors}
         nameCode={`${name} ${code}`}
+        isExpress={summary.isExpress === "Y"}
+        isPickup={summary.isPickup === "Y"}
       />
       <div></div>
     </div>
