@@ -1,24 +1,25 @@
-import { querySpuDetail, queryStock, searchDescription } from "@/apis/fetch";
-import SearchInput from "@/components/SearchInput";
-import SkuStock from "@/components/SkuStock";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { groupBy } from "@/lib/utils";
+import { querySpuDetail, queryStock, searchDescription } from "@/apis/fetch";
+import ProductFeed from "@/components/ProductFeed";
+import SkuStock from "@/components/SkuStock";
 
-const SearchResult = async ({ params }: { params: { keyword: string } }) => {
-  const keyword = decodeURIComponent(params.keyword);
-  const feedRes = await searchDescription({
-    keyword,
+const SearchResult = async ({ params }: { params: { code: string } }) => {
+  const searchRes = await searchDescription({
+    keyword: decodeURIComponent(params.code),
     pageSize: 30,
     page: 1,
   });
-  console.log("|feedRes", feedRes);
-  if (!feedRes.success || feedRes.resp[1].length === 0) {
+  const feed = searchRes.resp[1];
+  console.log("|feed", feed);
+  if (!searchRes.success || feed.length === 0) {
     return "无数据";
   }
+  if (feed.length > 1) {
+    return <ProductFeed list={feed} />;
+  }
 
-  const { colorPic, styleText, chipPic } = feedRes.resp[1]?.[0];
-  const { productCode, name, code } = feedRes.resp[1]?.[0];
+  const { colorPic, styleText, chipPic } = feed?.[0];
+  const { productCode, name, code } = feed?.[0];
 
   const stockRes = await queryStock({ productCode });
   if (!stockRes.success) {
@@ -33,7 +34,7 @@ const SearchResult = async ({ params }: { params: { keyword: string } }) => {
   const { rows: skus, summary } = spuRes.resp[0];
   const skuStocks = skus.map((skuItem) => {
     const estock = expressSkuStocks[skuItem.productId] as number;
-    console.log("|estock", skuItem.productId, estock);
+    // console.log("|estock", skuItem.productId, estock);
     return {
       ...skuItem,
       expressStock: estock,

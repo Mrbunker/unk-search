@@ -3,7 +3,7 @@ import { stock, feed, spuDetail } from "./mock";
 const fetcher = async (url: string, options: any) => {
   const response = await fetch(url, options);
   const result = await response.json();
-  console.log("|result", url, JSON.stringify(result));
+  // console.log("|result", url, JSON.stringify(result));
   return result;
 };
 
@@ -15,7 +15,7 @@ type Resp<D> = Promise<{
   total: number;
 }>;
 
-const origin = process.env.ORIGIN;
+const origin = "https://a.uniqlo.cn";
 const post = (path: string, data?: Record<string, any>) => {
   const url = `${origin}${path}`;
   const options = {
@@ -62,8 +62,8 @@ export const searchDescription = async (params: {
     storeCode: [],
   };
 
-  // return post(path, data);
-  return feed;
+  return post(path, data);
+  // return feed;
 };
 
 export const queryStock = async (params: {
@@ -77,8 +77,8 @@ export const queryStock = async (params: {
     distribution: params.distribution ?? "EXPRESS",
     type: params.type ?? "DETAIL",
   };
-  // return post(path, data);
-  return stock;
+  return post(path, data);
+  // return stock;
 };
 
 export type SkuItem = {
@@ -105,6 +105,6 @@ export const querySpuDetail = async (params: {
 > => {
   const path = `/m/product/i/product/spu/h5/query/${params.productCode}`;
 
-  // return get(path);
-  return spuDetail;
+  return get(path);
+  // return spuDetail;
 };
